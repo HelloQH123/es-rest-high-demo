@@ -1,0 +1,3 @@
+logging:
+  level:
+    github.qh.es: debug
