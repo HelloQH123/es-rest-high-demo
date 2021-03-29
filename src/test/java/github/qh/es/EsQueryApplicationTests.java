@@ -1,6 +1,6 @@
 package github.qh.es;
 
-import github.qh.es.infrastructure.EsSearchRepository;
+import github.qh.es.infrastructure.document.index.EsIndexApiRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -10,11 +10,11 @@ import javax.annotation.Resource;
 class EsQueryApplicationTests {
 
     @Resource
-    private EsSearchRepository esSearchRepository;
+    private EsIndexApiRepository esIndexApiRepository;
 
     @Test
     void contextLoads() {
-        esSearchRepository.createIndex();
+        esIndexApiRepository.createIndex();
     }
 
 }

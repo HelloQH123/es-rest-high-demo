@@ -1,12 +1,14 @@
-package github.qh.es.infrastructure;
+package github.qh.es.infrastructure.document.index;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteRequest;
+import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.WriteRequest;
+import org.elasticsearch.action.support.replication.ReplicationResponse;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -32,7 +34,8 @@ import static org.elasticsearch.common.lucene.uid.Versions.MATCH_ANY;
  */
 @Repository
 @Slf4j
-public class EsSearchRepository {
+public class EsIndexApiRepository {
+
     @Resource
     private RestHighLevelClient client;
 
@@ -67,7 +70,7 @@ public class EsSearchRepository {
                             //同步方式创建
                             IndexResponse indexResponse = client.index(var, COMMON_OPTIONS);
                             if(log.isDebugEnabled()){
-                                log.debug("创建索引:{},返回结果:{}",var,indexResponse);
+                                logResponse(var,indexResponse);
                             }
                             //异步方式创建
                             //createAsync(var);
@@ -84,6 +87,28 @@ public class EsSearchRepository {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void logResponse(IndexRequest request, IndexResponse indexResponse) {
+        String index = indexResponse.getIndex();
+        String id = indexResponse.getId();
+        if (indexResponse.getResult() == DocWriteResponse.Result.CREATED) {
+            log.debug("DocWriteResponse.Result.CREATED");
+        } else if (indexResponse.getResult() == DocWriteResponse.Result.UPDATED) {
+            log.debug("DocWriteResponse.Result.UPDATED");
+        }
+        ReplicationResponse.ShardInfo shardInfo = indexResponse.getShardInfo();
+        if (shardInfo.getTotal() != shardInfo.getSuccessful()) {
+            log.debug("分片总数：{},成功分片数：{}",shardInfo.getTotal(),shardInfo.getSuccessful());
+        }
+        if (shardInfo.getFailed() > 0) {
+            for (ReplicationResponse.ShardInfo.Failure failure :
+                    shardInfo.getFailures()) {
+                String reason = failure.reason();
+                log.debug("失败分片：{}",reason);
+            }
+        }
+        log.debug("创建索引index:{},id:{},创建参数：{},返回结果:{}",index,id,request,indexResponse);
     }
 
 
@@ -203,13 +228,13 @@ public class EsSearchRepository {
             @Override
             public void onResponse(IndexResponse indexResponse) {
                 if(log.isDebugEnabled()){
-                    log.debug("创建成功，{}",indexResponse);
+                    log.debug("异步创建成功，{}",indexResponse);
                 }
             }
 
             @Override
             public void onFailure(Exception e) {
-                log.error("创建失败",e);
+                log.error("异步创建失败",e);
             }
         };
         client.indexAsync(var, RequestOptions.DEFAULT, listener);
