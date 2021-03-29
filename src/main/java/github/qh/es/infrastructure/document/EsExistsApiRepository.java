@@ -23,7 +23,7 @@ public class EsExistsApiRepository {
     @Resource
     private RestHighLevelClient client;
 
-    public void exists(){
+    public void exists() {
         GetRequest getRequest = new GetRequest(
                 "index_json",
                 "1");
@@ -32,8 +32,8 @@ public class EsExistsApiRepository {
 
         try {
             boolean exists = client.exists(getRequest, RequestOptions.DEFAULT);
-            if(log.isDebugEnabled()){
-                log.debug("查询是否存在索引->index_json:{}",exists);
+            if (log.isDebugEnabled()) {
+                log.debug("查询是否存在索引->index_json:{}", exists);
             }
             //异步方式
             existsAsync(getRequest);
@@ -46,20 +46,18 @@ public class EsExistsApiRepository {
         ActionListener<Boolean> listener = new ActionListener<Boolean>() {
             @Override
             public void onResponse(Boolean exists) {
-                if(log.isDebugEnabled()){
-                    if(log.isDebugEnabled()){
-                        log.debug("异步方式查询是否存在索引->index_json_exists:{}",exists);
-                    }
+                if (log.isDebugEnabled()) {
+                    log.debug("异步方式查询是否存在索引->index_json_exists:{}", exists);
                 }
             }
 
             @Override
             public void onFailure(Exception e) {
-                log.error("异步方式查询发生异常",e);
+                log.error("异步方式查询发生异常", e);
             }
         };
         getRequest.index("index_json_exists");
-        client.existsAsync(getRequest, RequestOptions.DEFAULT,listener);
+        client.existsAsync(getRequest, RequestOptions.DEFAULT, listener);
 
     }
 }
