@@ -170,9 +170,9 @@ public class SearchApiRepository {
             }
             SearchHits hits = searchResponse.getHits();
             TotalHits totalHits = hits.getTotalHits();
-// the total number of hits, must be interpreted in the context of totalHits.relation
+            // the total number of hits, must be interpreted in the context of totalHits.relation
             long numHits = totalHits.value;
-// whether the number of hits is accurate (EQUAL_TO) or a lower bound of the total (GREATER_THAN_OR_EQUAL_TO)
+            // whether the number of hits is accurate (EQUAL_TO) or a lower bound of the total (GREATER_THAN_OR_EQUAL_TO)
             TotalHits.Relation relation = totalHits.relation;
             float maxScore = hits.getMaxScore();
 

@@ -12,6 +12,10 @@ import org.elasticsearch.action.support.replication.ReplicationResponse;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.client.indices.GetIndexResponse;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -21,10 +25,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.elasticsearch.common.lucene.uid.Versions.MATCH_ANY;
 
@@ -238,5 +239,31 @@ public class EsIndexApiRepository {
             }
         };
         client.indexAsync(var, RequestOptions.DEFAULT, listener);
+    }
+
+    /**
+     * 查询所有索引的方法
+     */
+    public void getAllIndex() throws IOException {
+        // 构建请求,注意*号的写法
+        GetIndexRequest getIndexRequest = new GetIndexRequest("*");
+
+        // 构建获取所有索引的请求：org.elasticsearch.client.indices.GetIndexRequest
+        GetIndexResponse allIndex = client.indices().get(getIndexRequest, RequestOptions.DEFAULT);
+
+        //以索引为键的索引设置
+        Map<String, Settings> settings = allIndex.getSettings();
+        if(log.isDebugEnabled()){
+            log.debug("setting={}",settings);
+        }
+
+        //以索引为键的索引map
+        Map<String, MappingMetaData> mappings = allIndex.getMappings();
+        if(log.isDebugEnabled()){
+            log.debug("mappings={}",mappings);
+        }
+
+        Arrays.stream(allIndex.getIndices()).forEach(System.out::println);
+
     }
 }
